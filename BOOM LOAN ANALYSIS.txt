@@ -1,0 +1,103 @@
+df=spark.read.format("csv").option("header","true").load("dbfs:/FileStore/shared_uploads/karthikuk153@gmail.com/loan__1_.csv")
+
+def mainmenu():
+    print('Welcome to BOOM Data Analysis')
+    choice = 0
+    while True :
+       
+        print()
+        print('1.press 1 to view  data in dataset ')
+        print('2. press 2 to view a specific customer  ') 
+        print('3. press 3 to for income tracker ')
+        print('4. press 4 to view the loan eligible customers ')
+        print('5. press 5 to view list of potential customers ')
+        print("6. press 6 to view list of potential defaulters   ")
+        print("7 . press 7 for viewing loans in each category ")
+        print("8 . press 8 for viewing loans greater than 1 lakh ")
+        print("9 . press 9 for viewing customers with more expense ")
+        print("10 . press 10 for viewing customers according to age ")
+        print("11. press 11 to exit")
+        
+        choice = int(input('select your option  : '))
+        
+        if choice == 1:
+            showalldata()
+        elif choice == 2:
+            viewspecificcustomer()
+        elif choice == 3:
+            incometracker()
+        elif choice == 4:
+            loaneligibility()
+        elif choice == 5:
+            listofpotentialcustomers()
+        elif choice == 6:
+            listofpotentialdefaulters() 
+        elif choice == 7:
+            loansineachcategory() 
+        elif choice == 8 :
+             bigloans() 
+        elif choice == 9 :
+            moreexpense()
+        elif choice == 10 :
+            agetracker()
+        elif choice == 11 :
+        
+            print("Thank you for using BOOM analysis ")
+            break
+        
+            
+        else:
+            print('Invalid Option !!!')
+            print('Please Select A Valid Option')
+            print()
+            input('Press Enter To Continue...')
+def showalldata():
+              
+                df.show()
+            
+def viewspecificcustomer() :
+             inp = input("Enter customer id to view customer ")
+             df.select("Customer_ID", "Age", "Occupation", "Marital Status", "Income").filter(df.Customer_ID==inp).show()
+
+def incometracker() :
+            while True :
+                  print()
+                  print('1.press 1 to check income of customer between 0 to 50000 ')
+                  print('2.press 2 to check income of customer between 50000 to 100000  ')
+                  print('3. press 3 to check income of customer more than 100000 ')
+                  ch = int(input("Enter choice : "))
+                  if ch == 1 :
+                        df.select("Customer_ID" , "occupation","Income").filter(df["Income"]<"50000").show(100)
+                        break
+                  elif ch == 2 :
+                        df.select("Customer_ID" , "occupation",'Income').filter(df["Income"]>"50000").show(100)
+                        break
+                  elif ch == 3 :
+                        df.select("Customer_ID" , "occupation","Income").filter(df["Income"]>"100000").show(100)
+                        break
+                  elif ch >= 4 :
+                        print("please choose correct option ")
+                        break
+def loaneligibility() :
+    print(" Eligible Customers are : ")
+    print()
+    df.select("Customer_ID","Occupation","Family Size","Income","Expenditure","Overdue").filter((df["Expenditure"]>df["Income"])).show()
+    
+def listofpotentialcustomers() :
+    print("List of potential non defaulter customers ")
+    print()
+    df.select("Customer_ID","Occupation","Income","Expenditure","Overdue").filter((df["Income"]> df["Expenditure"]) & (df["Income"] > '50000') & (df["Overdue"]<=5)).show(50)
+    
+def listofpotentialdefaulters() :
+    print("List of potential defaulters : ")
+    df.select("Income" ,"Expenditure").filter((df[" Returned Cheque"]>"1") & (df["Overdue"]>"1") & (df["Expenditure"] > df["Income"])).show()
+def loansineachcategory() :
+    df.groupBy("Loan Category").count().orderBy("count", ascending = False).show()
+def bigloans():
+    df.filter(df["Loan Amount"]>"1,00,000").show()
+def moreexpense():
+    df.filter((df["Expenditure"]>"50000")).show()
+def agetracker() :
+    inp = int(input("enter age to tract customers "))
+    df.select("Customer_ID", "Age", "Occupation", "Marital Status", "Income").filter(df.Age==inp).show()
+mainmenu()
